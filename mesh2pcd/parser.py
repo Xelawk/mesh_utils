@@ -32,6 +32,10 @@ class MeshParser(object):
             self.face_file = kwargs['face_file']
         else:
             self.face_file = None
+        if 'img_file' in kwargs:  # jpg or png
+            self.img_file = kwargs['img_file']
+        else:
+            self.img_file = None
         if 'dds_file' in kwargs:
             self.dds_file = kwargs['dds_file']
         else:
@@ -100,12 +104,19 @@ class MeshParser(object):
                 f_list.append([int(idx1_str), int(idx2_str), int(idx3_str)])
 
         # convert .dds to .png obj, then read the data
-        if self.dds_file:
+        if self.img_file:
+            img_texture = Image.open(self.img_file)
+            self.img_texture = img_texture.convert('RGB')
+            self.xyz, self.nxyz, self.uvs, self.faces = xyz_list, nxyz_list, uv_list, f_list
+            return True
+        elif self.dds_file:
             img = image.Image(filename=self.dds_file)
         elif self.dds_bin:
             img = image.Image(file=BytesIO(self.dds_bin))
         else:
-            raise Exception("DDS info not found!")
+            raise Exception("Image info not found!")
+
+        # saving to disk then read it
         img.compression = "no"
         path_tmp = 'cache/' + str(uuid.uuid1()) + '.png'
         img.save(filename=path_tmp)
@@ -113,6 +124,7 @@ class MeshParser(object):
         img_texture = Image.open(path_tmp)
         self.img_texture = img_texture.convert('RGB')
         self.xyz, self.nxyz, self.uvs, self.faces = xyz_list, nxyz_list, uv_list, f_list
+        return True
 
     def compute_uv_face_normal(self):
         uv_list = np.array(self.uvs)
