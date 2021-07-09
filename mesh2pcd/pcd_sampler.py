@@ -24,6 +24,7 @@ class PcdSampler(object):
             mesh_str: default None
             face_file: default None
             face_str: default None
+            img_file: default None
             dds_file: default None
             dds_bin: default None
         """
